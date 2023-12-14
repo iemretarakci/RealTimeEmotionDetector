@@ -16,7 +16,7 @@ while(1):
     for (x,y,w,h)in faces:
         cv.rectangle(frame,(x,y),(x+w,y+h),(0,0,255),1)
     #Emotion Analyzer    
-    if w > 30 and h > 30:  # Minimum kabul edilebilir yüz boyutu
+    if w > 30 and h > 30:  # Minimum acceptable size of face
         face_roi = frame[y:y+h, x:x+w]
         emotion_result = DeepFace.analyze(face_roi, ["emotion"], enforce_detection=False)
     #Getting result for correct emotion
