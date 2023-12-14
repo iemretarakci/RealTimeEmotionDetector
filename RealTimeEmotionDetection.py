@@ -7,6 +7,7 @@ model = DeepFace.build_model("Emotion")
 face_cascade = cv.CascadeClassifier(cv.data.haarcascades + 'haarcascade_frontalface_default.xml')
 cap= cv.VideoCapture(0)
 while(1):
+    start_time_detector=time.time()
     #Get a frame from cam
     ret, frame = cap.read()
     if not ret:
@@ -15,12 +16,19 @@ while(1):
     faces=face_cascade.detectMultiScale(frame,scaleFactor=1.1,minNeighbors=5,minSize=(30,30))
     for (x,y,w,h)in faces:
         cv.rectangle(frame,(x,y),(x+w,y+h),(0,0,255),1)
-    #Emotion Analyzer    
-    if w > 30 and h > 30:  # Minimum kabul edilebilir yüz boyutu
+    end_time_detector=time.time()
+    elapsed_time_detector=end_time_detector-start_time_detector
+    print(elapsed_time_detector)
+    #Emotion Analyzer
+    start_time_analyzer=time.time()
+    if w > 30 and h > 30:  # Minimum acceptable face size
         face_roi = frame[y:y+h, x:x+w]
         emotion_result = DeepFace.analyze(face_roi, ["emotion"], enforce_detection=False)
     #Getting result for correct emotion
     dominant_emotion=max(emotion_result[0]["emotion"],key=emotion_result[0]["emotion"].get)
+    end_time_analyzer=time.time()
+    elapsed_time_analyzer=end_time_analyzer-start_time_analyzer
+    print(elapsed_time_analyzer)
     #Print result
     cv.putText(frame,f"emotion:{dominant_emotion}",(x,y-10),cv.FONT_HERSHEY_SIMPLEX,0.5,(0,0,255),2)
     #Show screen
