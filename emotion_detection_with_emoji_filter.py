@@ -47,18 +47,18 @@ def frame_processor():
                                 frame[y:y+h, x:x+w, c] = (alpha_s * resized_emoji[:,:,c] +
                                                            alpha_l * frame[y:y+h, x:x+w, c])
 
-            cv.imshow('Frame', frame)
-            k = cv.waitKey(1)
+                cv.imshow('Frame', frame)
+                k = cv.waitKey(5)
 
-            if k == 27:  # Press esc for quit
-                break
-            elif k == 112:  # Press p for pause
-                cv.waitKey(0)
-            elif k == 115:  # Press s for taking screenshot
-                ss_path = os.path.join(ss_folder, f"screenshot{ss_index}.png")
-                cv.imwrite(ss_path, frame)
-                logging.info(f"screenshot taken to {ss_path}.")
-                ss_index += 1
+                if k == 27:  # Press esc for quit
+                    break
+                elif k == 112:  # Press p for pause
+                    cv.waitKey(0)
+                elif k == 115:  # Press s for taking screenshot
+                    ss_path = os.path.join(ss_folder, f"screenshot{ss_index}.png")
+                    cv.imwrite(ss_path, frame)
+                    logging.info(f"screenshot taken to {ss_path}.")
+                    ss_index += 1
 
     cap.release()
     cv.destroyAllWindows()
