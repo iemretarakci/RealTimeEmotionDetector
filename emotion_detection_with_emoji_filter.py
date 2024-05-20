@@ -2,7 +2,7 @@ import cv2 as cv
 import os
 import logging
 from deepface import DeepFace
-
+import time
 model = DeepFace.build_model("Emotion")
 face_cascade = cv.CascadeClassifier(cv.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
@@ -30,14 +30,20 @@ def frame_processor():
                 cv.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 1)
 
             frame_count += 1
-            if frame_count % 10 == 0:  # Perform analysis every 10 frames
+            if frame_count % 1 == 0:  # Perform analysis every 1 frame
                 for (x, y, w, h) in faces:
                     if w > 30 and h > 30:
                         face_roi = frame[y:y+h, x:x+w]
-                        emotion_result = DeepFace.analyze(face_roi, ["emotion"], enforce_detection=False)
+                        emotion_result = DeepFace.analyze(face_roi, ["emotion"], enforce_detection=False,detector_backend="opencv")
                         dominant_emotion = max(emotion_result[0]["emotion"], key=emotion_result[0]["emotion"].get)
-
-                        emoji_path = os.path.join(emoji_dir, f"{dominant_emotion}.png")
+                        cv.putText(frame,f"emotion:{dominant_emotion}",(x,y-10),cv.FONT_HERSHEY_SIMPLEX,0.5,(0,0,255),2)                        
+                        # Take emotion info for filtering correct emoji 
+                        if len(emotion_buffer) >= BUFFER_SIZE:
+                            emotion_buffer.pop(0)
+                        emotion_buffer.append(dominant_emotion)
+                        average_emotion = max(set(emotion_buffer),key=emotion_buffer.count)
+                        
+                        emoji_path = os.path.join(emoji_dir, f"{average_emotion}.png")
                         emoji = cv.imread(emoji_path, cv.IMREAD_UNCHANGED)
                         if emoji is not None:
                             resized_emoji = cv.resize(emoji, (w, h))
@@ -49,7 +55,7 @@ def frame_processor():
 
                 cv.imshow('Frame', frame)
                 k = cv.waitKey(5)
-
+                time.sleep(0.05)
                 if k == 27:  # Press esc for quit
                     break
                 elif k == 112:  # Press p for pause
@@ -59,9 +65,10 @@ def frame_processor():
                     cv.imwrite(ss_path, frame)
                     logging.info(f"screenshot taken to {ss_path}.")
                     ss_index += 1
-
     cap.release()
     cv.destroyAllWindows()
 
 # Main Block
-frame_processor()  
+BUFFER_SIZE = 7  
+emotion_buffer = []
+frame_processor()
